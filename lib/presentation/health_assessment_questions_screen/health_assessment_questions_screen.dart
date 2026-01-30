@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../widgets/custom_app_bar.dart';
@@ -101,18 +100,19 @@ class _HealthAssessmentQuestionsScreenState
     });
   }
 
+  bool _isNavigating = false;
+
   Future<void> _handleGetResults() async {
-    if (_answers[_currentQuestionIndex] == null) return;
+    if (_answers[_currentQuestionIndex] == null || _isNavigating) return;
 
     HapticFeedback.mediumImpact();
 
     setState(() {
       _isLoading = true;
+      _isNavigating = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
+    // Removed artificial 2s delay for instant responsiveness
 
     final int yesCount = _answers.values
         .where((answer) => answer == true)
@@ -129,12 +129,15 @@ class _HealthAssessmentQuestionsScreenState
       riskLevel = 'high';
     }
 
+    if (!mounted) return;
+
     Navigator.of(context, rootNavigator: true).pushReplacementNamed(
       '/health-assessment-results-screen',
       arguments: {
         'riskLevel': riskLevel,
         'symptoms': widget.selectedSymptoms,
         'answers': _answers,
+        // Pass more context if needed
       },
     );
   }

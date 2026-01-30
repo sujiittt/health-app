@@ -29,6 +29,7 @@ dependencies:
   permission_handler: ^12.0.1 # Request location permissions on Android/iOS platforms
   google_generative_ai: ^0.4.7 # Enable Gemini AI integration for personalized health recommendations
   url_launcher: ^6.2.5       # For making phone calls and launching URLs
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:    # CRITICAL: Required for Flutter project testing - DO NOT REMOVE

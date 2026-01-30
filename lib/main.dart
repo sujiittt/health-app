@@ -26,11 +26,10 @@ void main() async {
   };
 
   // 🚨 CRITICAL: Device orientation lock - DO NOT REMOVE
-  Future.wait([
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
-  ]).then((value) {
-    runApp(MyApp());
-  });
+  // 🚨 CRITICAL: Device orientation lock - Fire and forget
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

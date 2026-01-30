@@ -5,6 +5,7 @@ import '../../widgets/custom_app_bar.dart';
 import '../../services/gemini_service.dart';
 import '../../widgets/translated_text.dart';
 import '../../services/localization_service.dart';
+import '../../widgets/ai_response_viewer.dart';
 
 class TellUsMoreScreen extends StatefulWidget {
   const TellUsMoreScreen({super.key});
@@ -58,12 +59,14 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
 
     try {
       final currentLang = LocalizationService().langCode;
+      
+      // Call backend via GeminiService
       final guidance = await GeminiService().generateGeneralGuidance(
         gender: _selectedGender,
         age: _ageController.text,
         description: _descriptionController.text,
         selectedChips: _selectedChips.toList(),
-        language: currentLang, // Pass current language
+        language: currentLang,
       );
 
       if (!mounted) return;
@@ -73,14 +76,17 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')), // Could also translate error messages
+        SnackBar(
+          content: Text(LocalizationService().translateSync('Failed to get guidance. Please try again.')),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showGuidanceSheet(Map<String, String> guidance) {
+  void _showGuidanceSheet(Map<String, dynamic> guidance) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -94,69 +100,62 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          padding: EdgeInsets.all(5.w),
-          child: ListView(
-            controller: controller,
-            children: [
-              Center(
+          padding: EdgeInsets.symmetric(horizontal: 5.w),
+          child: Column(
+             children: [
+               SizedBox(height: 1.h),
+               // Drag Handle
+               Center(
                 child: Container(
                   width: 10.w,
                   height: 5,
+                  margin: EdgeInsets.symmetric(vertical: 2.h),
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
-              SizedBox(height: 3.h),
-              Text(
-                'Guidance',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 2.h),
-              
-              _buildSectionTitle('Summary', Icons.info_outline),
-              Text(
-                guidance['summary'] ?? '',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              SizedBox(height: 2.h),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Column(
+                    children: [
+                      Text(
+                        LocalizationService().translateSync('Guidance'),
+                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 3.h),
+                      
+                      // Use shared AI Response Viewer
+                      AiResponseViewer(
+                        data: guidance,
+                      ),
 
-              _buildSectionTitle('Advice', Icons.medical_services_outlined),
-              Text(
-                guidance['advice'] ?? '',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              SizedBox(height: 2.h),
-
-              _buildSectionTitle('Warning Signs', Icons.warning_amber_rounded, color: Colors.red),
-              Text(
-                guidance['warningSigns'] ?? '',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.red[800],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 4.h),
-
-              SizedBox(
-                width: double.infinity,
-                height: 6.h,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
+                      SizedBox(height: 3.h),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 6.h,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: TrText('Close'),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                    ],
                   ),
-                  child: const Text('Close'),
                 ),
               ),
-            ],
-          ),
+             ],
+           ),
         ),
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/localization_service.dart';
 import '../../core/app_export.dart';
@@ -137,30 +136,20 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// Build logo section with namaste animation
+  /// Build logo section with static icon (Lottie removed as asset missing)
   Widget _buildLogoSection(ThemeData theme) {
     return Container(
       width: 200,
       height: 200,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withOpacity(0.15),
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: Lottie.asset(
-          'assets/animations/namaste.json',
-          width: 160,
-          height: 160,
-          fit: BoxFit.contain,
-          repeat: true,
-          errorBuilder: (context, error, stackTrace) {
-            // Fallback to static icon if animation fails
-            return CustomIconWidget(
-              iconName: 'health_and_safety',
-              size: 120,
-              color: Colors.white,
-            );
-          },
+        child: Icon(
+          Icons.health_and_safety,
+          size: 100,
+          color: Colors.white,
         ),
       ),
     );

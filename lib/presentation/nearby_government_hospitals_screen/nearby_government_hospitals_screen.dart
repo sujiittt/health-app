@@ -85,7 +85,7 @@ class _NearbyGovernmentHospitalsScreenState
         return;
       }
 
-      // 2. Get User Location
+      // 2. Get User Location with Timeout & Fallback to prevent ANR
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (!mounted) return;
@@ -96,11 +96,34 @@ class _NearbyGovernmentHospitalsScreenState
         return;
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
+      Position? position;
+      
+      try {
+        // Try getting the last known position first (instant)
+        position = await Geolocator.getLastKnownPosition();
+        
+        // If no last known, or if we want fresher data, try current position with strict timeout
+        // We use a short timeout (5s) to prevent blocking/ANR
+        position ??= await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium, // Reduced from high for speed
+            ),
+          ).timeout(const Duration(seconds: 5));
+      } catch (e) {
+        // Timeout or other error
+        debugPrint('Location fetch timed out or failed: $e');
+        // Fallback to a default location or show error if strictly needed
+        // For now, if we have NO position, we can't show nearby.
+      }
+
+      if (position == null) {
+         if (!mounted) return;
+         setState(() {
+           _isLoading = false;
+           _errorMessage = 'Could not fetch location. Please check GPS and try again.';
+         });
+         return;
+      }
 
       // 3. Load CSV Data
       final csvString = await rootBundle.loadString('assets/hospital_directory.csv');

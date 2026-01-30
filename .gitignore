@@ -1,0 +1,134 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+*.swo
+*.swn
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+pubspec.lock
+
+# Environment and Configuration
+.env
+.env.local
+.env.*.local
+env.json
+local.properties
+
+# IDE and Editor related
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.vs/
+.vsCode/
+.idea/
+
+# VS Code related
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/web/
+coverage/
+.coverage
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+android/app/.cxx
+/android/.gradle
+/android/.idea
+/android/local.properties
+/android/build
+/android/captures
+/android/*.iml
+
+# iOS/macOS
+ios/Pods/
+ios/Podfile.lock
+.swift_version
+macos/Pods/
+macos/Podfile.lock
+
+# Web
+web/.dart_tool/
+web/packages
+web/.packages
+
+# Logging
+*.log
+*.log.*
+logs/
+tmp/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Packages
+.packages
+.package_config.json
+
+# Avoid committing generated Javascript files:
+*.dart.js
+*.info.json
+
+# Avoid committing pubspec.lock for library packages; see
+# https://dart.dev/guides/libraries/private-files#pubspeclock.
+pubspec.lock
+
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Generated files
+*.g.dart
+*.config.dart
+*.freezed.dart
+*.chopper.dart

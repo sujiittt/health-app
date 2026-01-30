@@ -1,0 +1,325 @@
+import 'package:flutter/material.dart';
+import 'package:sizer/sizer.dart';
+import '../../core/app_export.dart';
+import '../../widgets/custom_app_bar.dart';
+import '../../services/gemini_service.dart';
+
+class TellUsMoreScreen extends StatefulWidget {
+  const TellUsMoreScreen({super.key});
+
+  @override
+  State<TellUsMoreScreen> createState() => _TellUsMoreScreenState();
+}
+
+class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
+  final _formKey = GlobalKey<FormState>();
+  
+  String _selectedGender = 'Male';
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  
+  final List<String> _chipOptions = [
+    'Pain', 'Dizziness', 'Weakness', 'Vomiting', 'Injury', 'Breathing Issue', 'Other'
+  ];
+  final Set<String> _selectedChips = {};
+
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _ageController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _submitData() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_descriptionController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please describe your problem')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final guidance = await GeminiService().generateGeneralGuidance(
+        gender: _selectedGender,
+        age: _ageController.text,
+        description: _descriptionController.text,
+        selectedChips: _selectedChips.toList(),
+        language: 'English', // Could be dynamic
+      );
+
+      if (!mounted) return;
+      
+      _showGuidanceSheet(guidance);
+
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showGuidanceSheet(Map<String, String> guidance) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.all(5.w),
+          child: ListView(
+            controller: controller,
+            children: [
+              Center(
+                child: Container(
+                  width: 10.w,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              SizedBox(height: 3.h),
+              Text(
+                'Guidance',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 2.h),
+              
+              _buildSectionTitle('Summary', Icons.info_outline),
+              Text(
+                guidance['summary'] ?? '',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              SizedBox(height: 2.h),
+
+              _buildSectionTitle('Advice', Icons.medical_services_outlined),
+              Text(
+                guidance['advice'] ?? '',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              SizedBox(height: 2.h),
+
+              _buildSectionTitle('Warning Signs', Icons.warning_amber_rounded, color: Colors.red),
+              Text(
+                guidance['warningSigns'] ?? '',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.red[800],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 4.h),
+
+              SizedBox(
+                width: double.infinity,
+                height: 6.h,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Close'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title, IconData icon, {Color? color}) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.only(bottom: 1.h),
+      child: Row(
+        children: [
+          Icon(icon, color: color ?? theme.colorScheme.primary, size: 20),
+          SizedBox(width: 2.w),
+          Text(
+            title,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: color ?? theme.colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      appBar: CustomAppBar(
+        title: 'Tell Us More',
+        showBackButton: true,
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: EdgeInsets.all(4.w),
+            children: [
+              // Reassurance Message
+              Container(
+                padding: EdgeInsets.all(4.w),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.security, color: theme.colorScheme.primary),
+                    SizedBox(width: 3.w),
+                    Expanded(
+                      child: Text(
+                        'This is for preliminary guidance only. We do not provide medical diagnosis. In emergencies, call 108 immediately.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          height: 1.4
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 3.h),
+
+              // Gender Selection
+              Text('Gender', style: theme.textTheme.titleMedium),
+              Row(
+                children: ['Male', 'Female', 'Other'].map((gender) {
+                  return Expanded(
+                    child: RadioListTile<String>(
+                      title: Text(gender, style: theme.textTheme.bodyMedium),
+                      value: gender,
+                      groupValue: _selectedGender,
+                      onChanged: (val) => setState(() => _selectedGender = val!),
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: theme.colorScheme.primary,
+                    ),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 2.h),
+
+              // Age Input
+              Text('Age', style: theme.textTheme.titleMedium),
+              SizedBox(height: 1.h),
+              TextFormField(
+                controller: _ageController,
+                keyboardType: TextInputType.number,
+                maxLength: 3,
+                decoration: InputDecoration(
+                  hintText: 'Enter age (e.g., 25)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
+                ),
+                validator: (val) {
+                  if (val == null || val.isEmpty) return 'Required';
+                  if (int.tryParse(val) == null) return 'Invalid age';
+                  return null;
+                },
+              ),
+              SizedBox(height: 2.h),
+
+              // Symptom Chips
+              Text('Common Symptoms (Optional)', style: theme.textTheme.titleMedium),
+              SizedBox(height: 1.h),
+              Wrap(
+                spacing: 2.w,
+                children: _chipOptions.map((chip) {
+                  final isSelected = _selectedChips.contains(chip);
+                  return FilterChip(
+                    label: Text(chip),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) _selectedChips.add(chip);
+                        else _selectedChips.remove(chip);
+                      });
+                    },
+                    selectedColor: theme.colorScheme.primary.withOpacity(0.2),
+                    checkmarkColor: theme.colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: isSelected ? theme.colorScheme.primary : theme.textTheme.bodyMedium?.color,
+                    ),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 3.h),
+
+              // Description Input
+              Text('Describe your problem', style: theme.textTheme.titleMedium),
+              SizedBox(height: 1.h),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: 'Type here regarding what you are feeling...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignLabelWithHint: true,
+                ),
+              ),
+              SizedBox(height: 4.h),
+
+              // Action Button
+              SizedBox(
+                width: double.infinity,
+                height: 6.h,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submitData,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isLoading 
+                    ? const SizedBox(
+                        height: 24, 
+                        width: 24, 
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      )
+                    : const Text('Get Guidance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              SizedBox(height: 2.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

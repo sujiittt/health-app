@@ -3,6 +3,8 @@ import 'package:sizer/sizer.dart';
 import '../../core/app_export.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../services/gemini_service.dart';
+import '../../widgets/translated_text.dart';
+import '../../services/localization_service.dart';
 
 class TellUsMoreScreen extends StatefulWidget {
   const TellUsMoreScreen({super.key});
@@ -26,17 +28,28 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    LocalizationService().currentLanguage.addListener(_onLanguageChange);
+  }
+
+  @override
   void dispose() {
+    LocalizationService().currentLanguage.removeListener(_onLanguageChange);
     _ageController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onLanguageChange() {
+    setState(() {});
   }
 
   void _submitData() async {
     if (!_formKey.currentState!.validate()) return;
     if (_descriptionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please describe your problem')),
+        SnackBar(content: Text(LocalizationService().translateSync('Please describe your problem'))),
       );
       return;
     }
@@ -44,12 +57,13 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final currentLang = LocalizationService().langCode;
       final guidance = await GeminiService().generateGeneralGuidance(
         gender: _selectedGender,
         age: _ageController.text,
         description: _descriptionController.text,
         selectedChips: _selectedChips.toList(),
-        language: 'English', // Could be dynamic
+        language: currentLang, // Pass current language
       );
 
       if (!mounted) return;
@@ -59,7 +73,7 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Error: $e')), // Could also translate error messages
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -198,7 +212,7 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
                     Icon(Icons.security, color: theme.colorScheme.primary),
                     SizedBox(width: 3.w),
                     Expanded(
-                      child: Text(
+                      child: TrText(
                         'This is for preliminary guidance only. We do not provide medical diagnosis. In emergencies, call 108 immediately.',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.primary,
@@ -212,12 +226,12 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
               SizedBox(height: 3.h),
 
               // Gender Selection
-              Text('Gender', style: theme.textTheme.titleMedium),
+              TrText('Gender', style: theme.textTheme.titleMedium),
               Row(
                 children: ['Male', 'Female', 'Other'].map((gender) {
                   return Expanded(
                     child: RadioListTile<String>(
-                      title: Text(gender, style: theme.textTheme.bodyMedium),
+                      title: TrText(gender, style: theme.textTheme.bodyMedium),
                       value: gender,
                       groupValue: _selectedGender,
                       onChanged: (val) => setState(() => _selectedGender = val!),
@@ -230,36 +244,36 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
               SizedBox(height: 2.h),
 
               // Age Input
-              Text('Age', style: theme.textTheme.titleMedium),
+              TrText('Age', style: theme.textTheme.titleMedium),
               SizedBox(height: 1.h),
               TextFormField(
                 controller: _ageController,
                 keyboardType: TextInputType.number,
                 maxLength: 3,
                 decoration: InputDecoration(
-                  hintText: 'Enter age (e.g., 25)',
+                  hintText: LocalizationService().translateSync('Enter age'),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                   contentPadding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.5.h),
                 ),
                 validator: (val) {
-                  if (val == null || val.isEmpty) return 'Required';
-                  if (int.tryParse(val) == null) return 'Invalid age';
+                  if (val == null || val.isEmpty) return LocalizationService().translateSync('Required');
+                  if (int.tryParse(val) == null) return LocalizationService().translateSync('Invalid age');
                   return null;
                 },
               ),
               SizedBox(height: 2.h),
 
               // Symptom Chips
-              Text('Common Symptoms (Optional)', style: theme.textTheme.titleMedium),
+              TrText('Common Symptoms (Optional)', style: theme.textTheme.titleMedium),
               SizedBox(height: 1.h),
               Wrap(
                 spacing: 2.w,
                 children: _chipOptions.map((chip) {
                   final isSelected = _selectedChips.contains(chip);
                   return FilterChip(
-                    label: Text(chip),
+                    label: TrText(chip), // TrText for chips
                     selected: isSelected,
                     onSelected: (selected) {
                       setState(() {
@@ -278,13 +292,13 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
               SizedBox(height: 3.h),
 
               // Description Input
-              Text('Describe your problem', style: theme.textTheme.titleMedium),
+              TrText('Describe your problem', style: theme.textTheme.titleMedium),
               SizedBox(height: 1.h),
               TextFormField(
                 controller: _descriptionController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: 'Type here regarding what you are feeling...',
+                  hintText: LocalizationService().translateSync('Type here regarding what you are feeling...'),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -312,7 +326,7 @@ class _TellUsMoreScreenState extends State<TellUsMoreScreen> {
                         width: 24, 
                         child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                       )
-                    : const Text('Get Guidance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    : TrText('Get Guidance', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               SizedBox(height: 2.h),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import './symptom_card_widget.dart';
+import '../../../services/localization_service.dart';
 
 /// Grid layout widget for displaying symptom cards
 /// Implements 2-column responsive grid with proper spacing
@@ -34,9 +35,19 @@ class SymptomsGridWidget extends StatelessWidget {
         final symptom = symptoms[index];
         final symptomId = symptom['id'] as String;
         final isSelected = selectedSymptoms.contains(symptomId);
+        
+        // Dynamic Language Selection for Symptom Cards
+        // This ensures the cards update immediately without waiting for API translation
+        String displayName = symptom['name'];
+        final currentLang = LocalizationService().langCode;
+        if (currentLang == 'hi' && symptom.containsKey('nameHindi')) {
+          displayName = symptom['nameHindi'];
+        } else if (currentLang == 'mr' && symptom.containsKey('nameMarathi')) {
+          displayName = symptom['nameMarathi'];
+        }
 
         return SymptomCardWidget(
-          symptomName: symptom['name'] as String,
+          symptomName: displayName,
           iconName: symptom['icon'] as String,
           isSelected: isSelected,
           onTap: () => onSymptomTap(symptomId),

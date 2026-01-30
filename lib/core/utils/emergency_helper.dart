@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../widgets/translated_text.dart';
 
 class EmergencyHelper {
   /// Shows a confirmation dialog and dials the emergency number (108) if confirmed.
@@ -11,19 +12,19 @@ class EmergencyHelper {
           children: [
             Icon(Icons.warning_amber_rounded, color: Color(0xFFD32F2F)),
             SizedBox(width: 8),
-            Text('Emergency Helpline'),
+            TrText('Emergency Helpline'),
           ],
         ),
-        content: const Text(
+        content: const TrText(
           'This will call the ambulance helpline (108). Do you want to proceed?',
           style: TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
+            child: TrText(
               'Cancel',
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
           ),
           ElevatedButton(
@@ -40,7 +41,7 @@ class EmergencyHelper {
               children: [
                 Icon(Icons.call, size: 18),
                 SizedBox(width: 8),
-                Text('Call 108'),
+                TrText('Call 108'), // Keep 108 static or TrText? 108 is number. 'Call 108' -> '108 कॉल करें'. TrText fits.
               ],
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 import '../nearby_government_hospitals_screen.dart';
+import '../../../services/localization_service.dart';
 
 /// Widget to display individual hospital information card
 class HospitalCardWidget extends StatelessWidget {
@@ -101,7 +102,7 @@ class HospitalCardWidget extends StatelessWidget {
                       ),
                       SizedBox(width: 1.w),
                       Text(
-                        '${hospital.distance?.toStringAsFixed(1)} km away',
+                        '${hospital.distance?.toStringAsFixed(1)} ${LocalizationService().translateSync('km away')}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: const Color(0xFF2E7D32),
                           fontWeight: FontWeight.w600,

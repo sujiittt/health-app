@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../services/localization_service.dart';
 import '../../core/app_export.dart';
 import '../../widgets/custom_icon_widget.dart';
 
@@ -47,15 +47,20 @@ class _SplashScreenState extends State<SplashScreen>
       // Minimum display time for branding
       await Future.delayed(const Duration(milliseconds: 2500));
 
-      // Load language preferences
-      final prefs = await SharedPreferences.getInstance();
-      final savedLanguage = prefs.getString('selected_language');
+      // Initialize Localization and load language preferences
+      await LocalizationService().init();
+      final savedLanguage = LocalizationService().langCode;
 
       if (!mounted) return;
 
-      // Navigate based on language preference
-      if (savedLanguage != null && savedLanguage.isNotEmpty) {
-        // User has selected language before, go to symptoms selection
+      // Navigate based on language preference (check if default 'en' was actually a saved choice or just default)
+      // Since defaults to 'en', we need to check if it was set. LocalizationService handles it.
+      // Actually, standard pattern: if (pref exists) go home, else select lang.
+      final prefs = await SharedPreferences.getInstance();
+      final hasLanguageSet = prefs.containsKey('selected_language');
+
+      if (hasLanguageSet) {
+        // User has selected language before
         Navigator.of(
           context,
           rootNavigator: true,

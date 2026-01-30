@@ -7,6 +7,7 @@ import 'package:sizer/sizer.dart';
 import 'dart:math';
 
 import '../../core/utils/emergency_helper.dart'; // Import Helper
+import '../../services/localization_service.dart';
 import '../../widgets/custom_app_bar.dart';
 import './widgets/hospital_card_widget.dart';
 
@@ -27,7 +28,6 @@ class Hospital {
   });
 }
 
-/// Nearby Government Hospitals Screen
 class NearbyGovernmentHospitalsScreen extends StatefulWidget {
   const NearbyGovernmentHospitalsScreen({super.key});
 
@@ -46,7 +46,24 @@ class _NearbyGovernmentHospitalsScreenState
   void initState() {
     super.initState();
     _loadHospitals();
+    LocalizationService().currentLanguage.addListener(_onLanguageChange);
   }
+
+  @override
+  void dispose() {
+    LocalizationService().currentLanguage.removeListener(_onLanguageChange);
+    super.dispose();
+  }
+
+  void _onLanguageChange() {
+    if (mounted) {
+      setState(() {
+        // UI rebuild triggers translations
+      });
+    }
+  }
+
+  String _t(String text) => LocalizationService().translateSync(text);
 
   Future<void> _loadHospitals() async {
     try {
@@ -153,7 +170,7 @@ class _NearbyGovernmentHospitalsScreenState
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(
-        title: 'Nearby Government Hospitals',
+        title: _t('Nearby Government Hospitals'),
         showBackButton: true,
         centerTitle: true,
         actions: [
@@ -163,7 +180,7 @@ class _NearbyGovernmentHospitalsScreenState
               icon: const Icon(Icons.phone_in_talk),
               color: const Color(0xFFD32F2F), // Emergency Red
               iconSize: 28,
-              tooltip: 'Emergency Helpline (108)',
+              tooltip: _t('Emergency Helpline'),
               padding: const EdgeInsets.all(12),
             ),
         ],
@@ -189,7 +206,7 @@ class _NearbyGovernmentHospitalsScreenState
           ),
           SizedBox(height: 3.h),
           Text(
-            'Finding hospitals near you...',
+            _t('Finding hospitals near you...'),
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurface,
             ),
@@ -209,7 +226,7 @@ class _NearbyGovernmentHospitalsScreenState
             Icon(Icons.error_outline, size: 20.w, color: const Color(0xFFD32F2F)),
             SizedBox(height: 3.h),
             Text(
-              _errorMessage!,
+              _t(_errorMessage ?? 'Failed to load hospital data. Please try again.'),
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
               ),
@@ -228,7 +245,7 @@ class _NearbyGovernmentHospitalsScreenState
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Try Again'),
+                child: Text(_t('Try Again')),
               ),
             ),
           ],
@@ -252,7 +269,7 @@ class _NearbyGovernmentHospitalsScreenState
               ),
               SizedBox(height: 3.h),
               Text(
-                'No government hospitals found within 10km.',
+                _t('No government hospitals found within 10km.'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.onSurface,
                 ),
@@ -281,7 +298,7 @@ class _NearbyGovernmentHospitalsScreenState
               SizedBox(width: 3.w),
               Expanded(
                 child: Text(
-                  'Found ${_hospitals.length} hospitals within 10km',
+                  '${_t('Found')} ${_hospitals.length} ${_t('hospitals within 10km')}',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: const Color(0xFFD32F2F),
                     fontWeight: FontWeight.w600,

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../widgets/custom_app_bar.dart';
+import '../../services/localization_service.dart';
 import './widgets/navigation_buttons_widget.dart';
 import './widgets/progress_indicator_widget.dart';
 import './widgets/question_card_widget.dart';
@@ -25,85 +26,37 @@ class _HealthAssessmentQuestionsScreenState
     extends State<HealthAssessmentQuestionsScreen> {
   int _currentQuestionIndex = 0;
   final Map<int, bool> _answers = {};
-  String _selectedLanguage = 'English';
   bool _isLoading = false;
   bool _canNavigate = true;
-
-  final Map<String, Map<String, dynamic>> _translations = {
-    'English': {
-      'title': 'Health Assessment',
-      'progressText': 'Question',
-      'previousButton': 'Previous',
-      'nextButton': 'Next',
-      'getResultsButton': 'Get Results',
-      'yesButton': 'Yes',
-      'noButton': 'No',
-      'loadingMessage': 'Calculating your results...',
-      'questions': [
-        'Is your symptom severe or getting worse?',
-        'Have you had this symptom for more than 3 days?',
-        'Is the symptom affecting your daily activities?',
-        'Do you have any other health conditions?',
-        'Are you taking any medications currently?',
-      ],
-    },
-    'Hindi': {
-      'title': 'स्वास्थ्य मूल्यांकन',
-      'progressText': 'प्रश्न',
-      'previousButton': 'पिछला',
-      'nextButton': 'अगला',
-      'getResultsButton': 'परिणाम देखें',
-      'yesButton': 'हाँ',
-      'noButton': 'नहीं',
-      'loadingMessage': 'आपके परिणाम की गणना की जा रही है...',
-      'questions': [
-        'क्या आपका लक्षण गंभीर है या बिगड़ रहा है?',
-        'क्या आपको यह लक्षण 3 दिनों से अधिक समय से है?',
-        'क्या लक्षण आपकी दैनिक गतिविधियों को प्रभावित कर रहा है?',
-        'क्या आपको कोई अन्य स्वास्थ्य समस्या है?',
-        'क्या आप वर्तमान में कोई दवा ले रहे हैं?',
-      ],
-    },
-    'Marathi': {
-      'title': 'आरोग्य मूल्यांकन',
-      'progressText': 'प्रश्न',
-      'previousButton': 'मागील',
-      'nextButton': 'पुढील',
-      'getResultsButton': 'निकाल पहा',
-      'yesButton': 'होय',
-      'noButton': 'नाही',
-      'loadingMessage': 'तुमचे निकाल मोजले जात आहेत...',
-      'questions': [
-        'तुमचे लक्षण गंभीर आहे किंवा वाढत आहे का?',
-        'तुम्हाला हे लक्षण 3 दिवसांपेक्षा जास्त काळ आहे का?',
-        'लक्षण तुमच्या दैनंदिन क्रियाकलापांवर परिणाम करत आहे का?',
-        'तुम्हाला इतर कोणतीही आरोग्य समस्या आहे का?',
-        'तुम्ही सध्या कोणतीही औषधे घेत आहात का?',
-      ],
-    },
-  };
+  
+  final List<String> _staticQuestions = [
+    'Is your symptom severe or getting worse?',
+    'Have you had this symptom for more than 3 days?',
+    'Is the symptom affecting your daily activities?',
+    'Do you have any other health conditions?',
+    'Are you taking any medications currently?',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadLanguagePreference();
+    LocalizationService().currentLanguage.addListener(_onLanguageChange);
+  }
+  
+  @override
+  void dispose() {
+    LocalizationService().currentLanguage.removeListener(_onLanguageChange);
+    super.dispose();
+  }
+  
+  void _onLanguageChange() {
+    setState(() {});
   }
 
-  Future<void> _loadLanguagePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _selectedLanguage = prefs.getString('selectedLanguage') ?? 'English';
-    });
-  }
+  // Helper to translate questions and UI text
+  String _t(String text) => LocalizationService().translateSync(text);
 
-  List<String> get _questions =>
-      (_translations[_selectedLanguage]?['questions'] as List<dynamic>?)
-          ?.cast<String>() ??
-          [];
-
-  String _getText(String key) {
-    return _translations[_selectedLanguage]?[key] as String? ?? '';
-  }
+  List<String> get _questions => _staticQuestions.map((q) => _t(q)).toList();
 
   void _handleAnswerSelection(bool answer) {
     if (!_canNavigate) return;
@@ -193,7 +146,7 @@ class _HealthAssessmentQuestionsScreenState
 
     if (_questions.isEmpty) {
       return Scaffold(
-        appBar: CustomAppBar(title: _getText('title'), showBackButton: true),
+        appBar: CustomAppBar(title: _t('Health Assessment'), showBackButton: true),
         body: Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(
@@ -205,7 +158,7 @@ class _HealthAssessmentQuestionsScreenState
     }
 
     return Scaffold(
-      appBar: CustomAppBar(title: _getText('title'), showBackButton: true),
+      appBar: CustomAppBar(title: _t('Health Assessment'), showBackButton: true),
       body: _isLoading
           ? Center(
         child: Column(
@@ -220,7 +173,7 @@ class _HealthAssessmentQuestionsScreenState
             ),
             SizedBox(height: 2.h),
             Text(
-              _getText('loadingMessage'),
+              _t('Calculating your results...'),
               style: theme.textTheme.titleMedium?.copyWith(
                 fontSize: 14.sp,
                 color: isDark
@@ -236,7 +189,7 @@ class _HealthAssessmentQuestionsScreenState
           ProgressIndicatorWidget(
             currentQuestion: _currentQuestionIndex + 1,
             totalQuestions: _questions.length,
-            progressText: _getText('progressText'),
+            progressText: _t('Question'),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -251,8 +204,8 @@ class _HealthAssessmentQuestionsScreenState
                     question: _questions[_currentQuestionIndex],
                     selectedAnswer: _answers[_currentQuestionIndex],
                     onAnswerSelected: _handleAnswerSelection,
-                    yesText: _getText('yesButton'),
-                    noText: _getText('noButton'),
+                    yesText: _t('Yes'),
+                    noText: _t('No'),
                   ),
                   SizedBox(height: 2.h),
                 ],
@@ -267,9 +220,9 @@ class _HealthAssessmentQuestionsScreenState
             onPreviousTap: _handlePrevious,
             onNextTap: _handleNext,
             onGetResultsTap: _handleGetResults,
-            previousText: _getText('previousButton'),
-            nextText: _getText('nextButton'),
-            getResultsText: _getText('getResultsButton'),
+            previousText: _t('Previous'),
+            nextText: _t('Next'),
+            getResultsText: _t('Get Results'),
             isNextEnabled: _answers[_currentQuestionIndex] != null,
           ),
         ],

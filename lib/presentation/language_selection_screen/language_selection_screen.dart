@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
+import '../../services/localization_service.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../widgets/custom_icon_widget.dart';
 
@@ -44,17 +44,11 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   }
 
   Future<void> _loadSavedLanguage() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedLanguage = prefs.getString('selected_language');
-      if (savedLanguage != null) {
-        setState(() {
-          _selectedLanguage = savedLanguage;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading saved language: $e');
-    }
+    // LocalizationService is likely already initialized in Splash, but safe to call
+    await LocalizationService().init();
+    setState(() {
+      _selectedLanguage = LocalizationService().langCode;
+    });
   }
 
   Future<void> _saveLanguageAndContinue() async {
@@ -65,8 +59,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('selected_language', _selectedLanguage!);
+      await LocalizationService().changeLanguage(_selectedLanguage!);
 
       if (!mounted) return;
 

@@ -1,4 +1,5 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter/foundation.dart';
 
 class GeminiService {
   static final GeminiService _instance = GeminiService._internal();
@@ -46,6 +47,9 @@ class GeminiService {
 
     try {
       final languageMap = {
+        'en': 'English',
+        'hi': 'Hindi (हिंदी)',
+        'mr': 'Marathi (मराठी)',
         'English': 'English',
         'Hindi': 'Hindi (हिंदी)',
         'Marathi': 'Marathi (मराठी)',
@@ -118,7 +122,11 @@ WARNING_SIGNS: [when to seek help]
 
     try {
       // Basic language map (can be expanded)
+      // Basic language map (can be expanded)
       final languageMap = {
+        'en': 'English',
+        'hi': 'Hindi',
+        'mr': 'Marathi',
         'English': 'English',
         'Hindi': 'Hindi',
         'Marathi': 'Marathi',
@@ -270,6 +278,76 @@ WARNING_SIGNS: [Specific signs to go to hospital immediately]
 
   void dispose() {
     // Cleanup if needed
+  }
+
+  /// Translates a single text string using Gemini
+  Future<String> translateText({
+    required String text,
+    required String targetLanguage,
+    String? context, // Optional context like "button label", "error message"
+  }) async {
+    // 1. Check for empty text
+    if (text.trim().isEmpty) return text;
+    
+    // 2. Check for English (Source) - No translation needed
+    if (targetLanguage.toLowerCase() == 'english' || targetLanguage.toLowerCase() == 'en') {
+      return text;
+    }
+
+    // 3. Mock Data Fallback (If API key missing)
+    if (_model == null) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      return _getMockTranslation(text, targetLanguage);
+    }
+
+    // Map code to full name
+    final languageMap = {
+      'en': 'English',
+      'hi': 'Hindi',
+      'mr': 'Marathi',
+    };
+    final fullTargetLanguage = languageMap[targetLanguage] ?? targetLanguage;
+
+    try {
+      final prompt = '''
+Translate the following UI text to $fullTargetLanguage for a rural Indian health app.
+Text: "$text"
+Context: ${context ?? "General UI"}
+
+Rules:
+1. Return ONLY the translated text. No explanations.
+2. Use simple, colloquial language suitable for rural users.
+3. Keep it concise (ui labels).
+''';
+
+      final content = [Content.text(prompt)];
+      final response = await _model!.generateContent(content);
+
+      if (response.text == null || response.text!.isEmpty) {
+        return text; // Fallback to original
+      }
+
+      return response.text!.trim();
+    } catch (e) {
+      debugPrint('Translation Error: $e');
+      return text; // Fallback to original
+    }
+  }
+
+  String _getMockTranslation(String text, String lang) {
+     if (lang == 'hi') {
+       if (text == 'Next') return 'अगला';
+       if (text == 'Continue') return 'जारी रखें';
+       if (text.contains('select')) return 'कृपया चुनें';
+       if (text.contains('Different Problem')) return 'अन्य समस्या';
+     }
+     if (lang == 'mr') {
+       if (text == 'Next') return 'पुढील';
+       if (text == 'Continue') return 'पुढे जा';
+       if (text.contains('select')) return 'कृपया निवडा';
+       if (text.contains('Different Problem')) return 'इतर समस्या';
+     }
+     return text;
   }
 }
 

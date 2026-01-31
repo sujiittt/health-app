@@ -54,13 +54,23 @@ class EmergencyHelper {
   static Future<void> _launchEmergencyNumber(BuildContext context) async {
     final Uri launchUri = Uri(scheme: 'tel', path: '108');
     try {
-      if (await canLaunchUrl(launchUri)) {
-        await launchUrl(launchUri);
-      } else {
-        _showToast(context, 'Could not launch dialer.');
+      // Try launching directly with external application mode
+      // This is often more reliable for dialers than checking canLaunchUrl first on some Android versions
+      bool launched = await launchUrl(
+        launchUri,
+        mode: LaunchMode.externalApplication,
+      );
+      
+      if (!launched) {
+         // Fallback: Try platform default
+         launched = await launchUrl(launchUri);
+      }
+
+      if (!launched) {
+        if (context.mounted) _showToast(context, 'Could not launch dialer.');
       }
     } catch (e) {
-      _showToast(context, 'Error launching dialer: $e');
+      if (context.mounted) _showToast(context, 'Error launching dialer: $e');
     }
   }
 

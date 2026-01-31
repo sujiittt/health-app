@@ -111,14 +111,7 @@ class _SymptomsSelectionScreenState extends State<SymptomsSelectionScreen> {
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
           appBar: CustomAppBar(
-            title: _getTitle(langCode), // Quick local fallback or use FutureBuilder for title?
-            // Better: use a helper function or assume TrText handles body.
-            // For AppBar title, since it expects String, dynamic translation is hard without sync cache.
-            // I'll use a simple map here for the title to be instant.
-            // Or just 'Select Your Symptoms' and let users rely on body text.
-            // User requirement: "all user-facing UI text".
-            // Since CustomAppBar takes String, I must provide a String.
-            // I will use a helper method _getTitle(langCode).
+            title: _getTitle(langCode),
             showBackButton: true,
             centerTitle: true,
             elevation: 0,
@@ -141,10 +134,11 @@ class _SymptomsSelectionScreenState extends State<SymptomsSelectionScreen> {
               ),
             ],
           ),
+          // Body contains Header + Grid
           body: SafeArea(
             child: Column(
               children: [
-                // Top Header Area with Dynamic Status Placeholder
+                // Top Header Area
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 2.h),
                   child: Column(
@@ -161,7 +155,7 @@ class _SymptomsSelectionScreenState extends State<SymptomsSelectionScreen> {
                       ),
                       SizedBox(height: 1.5.h),
                       
-                      // Status Area - Flexible height to prevent clipping
+                      // Status Area
                       ConstrainedBox(
                         constraints: BoxConstraints(minHeight: 5.h),
                         child: Center(
@@ -250,128 +244,128 @@ class _SymptomsSelectionScreenState extends State<SymptomsSelectionScreen> {
                     ),
                   ),
                 ),
-
-                // Bottom Sticky Action Area
-                Container(
-                  padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 2.h),
-                  decoration: BoxDecoration(
-                    color: theme.scaffoldBackgroundColor,
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? const Color(0x1FFFFFFF)
-                            : const Color(0x1F000000),
-                        blurRadius: 8,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Next Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _selectedSymptoms.isEmpty
-                                ? null
-                                : _navigateToQuestions,
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 2.h),
-                              backgroundColor: _selectedSymptoms.isEmpty
-                                  ? (isDark
-                                      ? const Color(0xFF1E1E1E)
-                                      : const Color(0xFFF5F5F5))
-                                  : theme.colorScheme.primary,
-                              foregroundColor: _selectedSymptoms.isEmpty
-                                  ? (isDark
-                                      ? const Color(0xFF757575)
-                                      : const Color(0xFFB0B0B0))
-                                  : (isDark
-                                      ? const Color(0xFF000000)
-                                      : const Color(0xFFFFFFFF)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: _selectedSymptoms.isEmpty ? 0 : 4,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                TrText(
-                                  'Next',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 18,
-                                    color: _selectedSymptoms.isEmpty
-                                        ? null // Use foreground color
-                                        : Colors.white,
-                                  ),
-                                ),
-                                SizedBox(width: 2.w),
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 22,
-                                  color: _selectedSymptoms.isEmpty
-                                  ? null // Use foreground color
-                                  : Colors.white,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        
-                        SizedBox(height: 2.h),
-
-                        // "I Have a Different Problem" Button (Gradient)
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                theme.colorScheme.primary.withOpacity(0.1),
-                                theme.colorScheme.primary.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: theme.colorScheme.primary.withOpacity(0.5),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(context, '/tell-us-more-screen');
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 2.h),
-                                child: Center(
-                                  child: TrText(
-                                    'I Have a Different Problem',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 1.h),
-                      ],
-                    ),
-                  ),
+              ],
+            ),
+          ),
+          
+          // Fixed Bottom Action Area (Solved Overflow)
+          bottomNavigationBar: Container(
+            padding: EdgeInsets.fromLTRB(4.w, 1.h, 4.w, 2.h),
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? const Color(0x1FFFFFFF)
+                      : const Color(0x1F000000),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
                 ),
               ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Next Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _selectedSymptoms.isEmpty
+                          ? null
+                          : _navigateToQuestions,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 2.h),
+                        backgroundColor: _selectedSymptoms.isEmpty
+                            ? (isDark
+                                ? const Color(0xFF1E1E1E)
+                                : const Color(0xFFF5F5F5))
+                            : theme.colorScheme.primary,
+                        foregroundColor: _selectedSymptoms.isEmpty
+                            ? (isDark
+                                ? const Color(0xFF757575)
+                                : const Color(0xFFB0B0B0))
+                            : (isDark
+                                ? const Color(0xFF000000)
+                                : const Color(0xFFFFFFFF)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: _selectedSymptoms.isEmpty ? 0 : 4,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TrText(
+                            'Next',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: _selectedSymptoms.isEmpty
+                                  ? null 
+                                  : Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 2.w),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 22,
+                            color: _selectedSymptoms.isEmpty
+                            ? null 
+                            : Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  SizedBox(height: 2.h),
+
+                  // "I Have a Different Problem" Button
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.colorScheme.primary.withOpacity(0.1),
+                          theme.colorScheme.primary.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.primary.withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/tell-us-more-screen');
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 2.h),
+                          child: Center(
+                            child: TrText(
+                              'I Have a Different Problem',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 1.h),
+                ],
+              ),
             ),
           ),
         );

@@ -53,55 +53,58 @@ class SymptomCardWidget extends StatelessWidget {
               : [],
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.5.h), // Reduced horizontal padding
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  CustomIconWidget(
-                    iconName: iconName,
-                    size: 56, // Increased icon size
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : (isDark
-                        ? const Color(0xFFB0B0B0)
-                        : const Color(0xFF757575)),
-                  ),
-                  if (isSelected)
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: CustomIconWidget(
-                        iconName: 'check',
-                        size: 16,
-                        color: isDark
-                            ? const Color(0xFF000000)
-                            : const Color(0xFFFFFFFF),
-                      ),
-                    ),
-                ],
-              ),
-              SizedBox(height: 1.h),
-              Text(
-                symptomName,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : (isDark
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xFF212121)),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+          padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.5.h),
+          child: FittedBox(
+             fit: BoxFit.scaleDown,
+             child: Column(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 Stack(
+                   alignment: Alignment.topRight,
+                   children: [
+                     CustomIconWidget(
+                       iconName: iconName,
+                       size: 56,
+                       color: isSelected
+                           ? theme.colorScheme.primary
+                           : (isDark
+                           ? const Color(0xFFB0B0B0)
+                           : const Color(0xFF757575)),
+                     ),
+                     if (isSelected)
+                       Container(
+                         padding: const EdgeInsets.all(2),
+                         decoration: BoxDecoration(
+                           color: theme.colorScheme.primary,
+                           shape: BoxShape.circle,
+                         ),
+                         child: CustomIconWidget(
+                           iconName: 'check',
+                           size: 16,
+                           color: isDark
+                               ? const Color(0xFF000000)
+                               : const Color(0xFFFFFFFF),
+                         ),
+                       ),
+                   ],
+                 ),
+                 SizedBox(height: 1.h),
+                 Text(
+                   symptomName,
+                   textAlign: TextAlign.center,
+                   style: theme.textTheme.titleMedium?.copyWith(
+                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                     color: isSelected
+                         ? theme.colorScheme.primary
+                         : (isDark
+                         ? const Color(0xFFFFFFFF)
+                         : const Color(0xFF212121)),
+                   ),
+                   maxLines: 2,
+                   overflow: TextOverflow.ellipsis,
+                 ),
+               ],
+             ),
           ),
         ),
       ),

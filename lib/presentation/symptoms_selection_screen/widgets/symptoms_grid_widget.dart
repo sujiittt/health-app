@@ -21,8 +21,9 @@ class SymptomsGridWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      // Allow scrolling to prevent overflow on small screens
+      // shrinkWrap: true, // Removed to allow filling Expanded space
+      // physics: const NeverScrollableScrollPhysics(), // Removed to allow scrolling
       padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3, // 3 columns

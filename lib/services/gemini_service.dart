@@ -4,47 +4,20 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
+import '../core/app_config.dart';
+
 class GeminiService {
   static final GeminiService _instance = GeminiService._internal();
-
-  // ===========================================================================
-  // CONFIGURATION START
-  // ===========================================================================
-  
-  // 1. EMULATOR: Use 'http://10.0.2.2:3000/api/assessment'
-  // 2. REAL DEVICE: Use your computer's local IP, e.g., 'http://192.168.1.5:3000/api/assessment'
-  
-  // Set your computer's IP here for real device testing:
-  static const String _physicalDeviceIp = '192.168.1.100'; // CHANGE THIS TO YOUR PC IP
-  
-  static String get _baseUrl {
-    if (kReleaseMode) {
-      // Production URL (if deployed)
-      return 'https://your-production-server.com/api/assessment';
-    }
-    
-    // Auto-detection logic (basic):
-    // Android Emulator usually can access 10.0.2.2.
-    // Physical devices need the LAN IP.
-    // Since we can't easily detect "Physical" vs "Emulator" purely in Dart io without plugins,
-    // we use a simple toggle or just use the LAN IP if expecting real device.
-    
-    // For now, defaulting to Emulator for simplicity unless manually changed here.
-    // To switch to Real Device, easier to just uncomment the IP version below.
-    
-    return 'http://10.0.2.2:3000/api/assessment';
-    // return 'http://$_physicalDeviceIp:3000/api/assessment'; // Uncomment for Real Device
-  }
-
-  static const Duration _timeoutDuration = Duration(seconds: 20); // 20s timeout
-
-  // ===========================================================================
-  // CONFIGURATION END
-  // ===========================================================================
 
   factory GeminiService() => _instance;
 
   GeminiService._internal();
+
+  // Use Centralized Config
+  static const Duration _timeoutDuration = AppConfig.apiTimeout;
+  
+  String get _baseUrl => AppConfig.apiBaseUrl;
+
 
   Future<Map<String, dynamic>> generateHealthRecommendations({
     required List<String> symptoms,

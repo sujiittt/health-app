@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../services/gemini_service.dart';
+import 'gemini_service.dart';
 
 class LocalizationService {
   static final LocalizationService _instance = LocalizationService._internal();
